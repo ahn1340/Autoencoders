@@ -1,3 +1,6 @@
+"""
+Implementation of ReLU-Conv-BN layers
+"""
 from torch import nn
 
 
@@ -7,7 +10,7 @@ class ReLUConvBN(nn.Module):
         self.op = nn.Sequential(
             nn.ReLU(inplace=False),
             nn.Conv2d(C_in, C_out, kernel_size, stride=stride, padding=padding, dilation=dilation,
-                      bias=False),
+                      bias=not affine),
             nn.BatchNorm2d(C_out, affine=affine)
         )
 
@@ -21,7 +24,7 @@ class ReLUUpConvBN(nn.Module):
         self.op = nn.Sequential(
             nn.ReLU(inplace=False),
             nn.ConvTranspose2d(C_in, C_out, kernel_size, stride=stride, padding=padding, dilation=dilation,
-                               output_padding=output_padding, bias=False),
+                               output_padding=output_padding, bias=not affine),
             nn.BatchNorm2d(C_out, affine=affine)
         )
 
