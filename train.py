@@ -1,63 +1,54 @@
 import torch
+
 from torch import nn, optim
 from torch.utils.data import DataLoader
 from torchvision import transforms
-from torchvision.datasets import CIFAR10, FashionMNIST
-import matplotlib.pyplot as plt
+from tqdm import tqdm
 
+# custom modules
 from model import AutoEncoder
+from dataset import IntelDataset
+from utils import unnormalize, save_ims
 
+# Datasets and loaders
 transform = transforms.Compose([
-    transforms.ToTensor()
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    transforms.Resize(size=(128, 128)),
 ])
 
-cifar10_train = CIFAR10(root='CIFAR10/train',
-                        train=True,
-                        transform=transform,
-                        target_transform=None,
-                        download=True,
-                        )
-cifar10_test = CIFAR10(root='CIFAR10/test',
-                       train=False,
-                       transform=transform,
-                       target_transform=None,
-                       download=True,
-                       )
-fashion_train = FashionMNIST(root='MNIST/train',
-                             train=True,
-                             transform=transform,
-                             target_transform=None,
-                             download=True,
-                             )
-fashion_test = FashionMNIST(root='MNIST/test',
-                            train=False,
-                            transform=transform,
-                            target_transform=None,
-                            download=True,
-                            )
+train_dataset = IntelDataset(data_root='IntelDataset', mode='train', transform=transform)
+test_dataset = IntelDataset(data_root='IntelDataset', mode='test', transform=transform)
 
-train_loader = DataLoader(cifar10_train,
-                          batch_size=64,
+train_loader = DataLoader(train_dataset,
+                          batch_size=128,
                           shuffle=True,
                           )
-test_loader = DataLoader(cifar10_test,
-                         batch_size=64,
+test_loader = DataLoader(test_dataset,
+                         batch_size=128,
                          shuffle=True,
                          )
 
 
-
 if __name__=='__main__':
-    device = "cuda:0"
-    model = AutoEncoder(hidden_dim=128).to(device)
+    #TODO: organize configs into a yamlfile
+    # configs
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    epochs = 50
+    save_freq = 5  # save im after how many epochs
+    num_ims = 5  # how many images to save
+
+    # model, loss function and optimizer
+    model = AutoEncoder(hidden_dim=4096).to(device)
     criterion = nn.MSELoss(reduction='mean')
     optimizer = optim.Adam(params=model.parameters(), lr=1e-3)
-    epochs = 50
+
+    # start training
     for epoch in range(1, epochs+1):
         train_loss_epoch = 0
         test_loss_epoch = 0
         # train
-        for i, (image, target) in enumerate(train_loader):
+        for i, (image, target) in tqdm(enumerate(train_loader), total=len(train_loader)):
             image = image.to(device)
             output = model(image)
 
@@ -77,16 +68,13 @@ if __name__=='__main__':
         print(f"[Epoch {epoch}] train loss: {train_loss_epoch}")
         print(f"[Epoch {epoch}] test loss: {test_loss_epoch}")
 
+        if epoch % save_freq == 0:
+            # random sample
+            idx = torch.randint(len(train_dataset), (num_ims,))
+            samples = train_dataset.random_sampling(idx).to(device)
+            output = model(samples)
+            # save image
+            samples = unnormalize(samples)
+            output = unnormalize(output)
+            save_ims(samples, output, epoch)
 
-        if (epoch) % 5 == 0:
-            for i, (image, target) in enumerate(test_loader):
-                image = image.to(device)
-                output = model(image)
-                sample = output[0].cpu().detach()
-                plt.figure()
-                plt.imshow(image[0].cpu().permute(1, 2, 0))
-                plt.show()
-                plt.figure()
-                plt.imshow(sample.permute(1, 2, 0))
-                plt.show()
-                break
