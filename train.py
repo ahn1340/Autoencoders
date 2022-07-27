@@ -1,3 +1,4 @@
+import os
 import torch
 
 from torch import nn, optim
@@ -34,12 +35,14 @@ if __name__=='__main__':
     #TODO: organize configs into a yamlfile
     # configs
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    epochs = 50
+    epochs = 200
     save_freq = 5  # save im after how many epochs
     num_ims = 5  # how many images to save
+    save_root = 'ckpt'
+    os.makedirs(save_root, exist_ok=True)
 
     # model, loss function and optimizer
-    model = AutoEncoder(hidden_dim=4096).to(device)
+    model = AutoEncoder(hidden_dim=2048).to(device)
     criterion = nn.MSELoss(reduction='mean')
     optimizer = optim.Adam(params=model.parameters(), lr=1e-3)
 
@@ -51,8 +54,8 @@ if __name__=='__main__':
         for i, (image, target) in tqdm(enumerate(train_loader), total=len(train_loader)):
             image = image.to(device)
             output = model(image)
-
             loss = criterion(image, output)
+
             train_loss_epoch += loss.detach().item()
             loss.backward()
             optimizer.step()
@@ -73,8 +76,17 @@ if __name__=='__main__':
             idx = torch.randint(len(train_dataset), (num_ims,))
             samples = train_dataset.random_sampling(idx).to(device)
             output = model(samples)
+
             # save image
             samples = unnormalize(samples)
             output = unnormalize(output)
             save_ims(samples, output, epoch)
+
+            # save model state dict
+            save_path = os.path.join(save_root, f'autoencoder_epoch{epoch}')
+            torch.save(model.state_dict(), save_path)
+
+
+
+
 
