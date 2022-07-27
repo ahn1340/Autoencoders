@@ -11,8 +11,8 @@ def unnormalize(im, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
 
 def save_ims(ims, recons, epoch, folder_path='./reconstruction'):
     """
-    :param ims: torch tensor, batch of images
-    :param path: where to save the images
+    :param ims (torch.Tensor): batch of images
+    :param path (str): where to save the images
     :return: None
     """
     # detach images
