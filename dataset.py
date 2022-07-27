@@ -11,8 +11,8 @@ class IntelDataset(Dataset):
         """
         Intel image classification dataset.
         Source: https://www.kaggle.com/datasets/puneet6060/intel-image-classification
-        :param data_root: root folder where data is stored. folder contains seg_pred, seg_train, seg_test
-        :param mode: str, one of ['train', 'test']
+        :param data_root (str): root folder where data is stored. folder contains seg_pred, seg_train, seg_test
+        :param mode (str): one of ['train', 'test']
         """
         self.data_root = data_root
         self.label_dict = {'buildings': 0, 'forest': 1, 'glacier': 2, 'mountain': 3, 'sea': 4, 'street': 5}
@@ -44,9 +44,9 @@ class IntelDataset(Dataset):
 
     def random_sampling(self, idx):
         """
-        return a batch of len(idx) random samples
-        :param idx: tuple of ints
-        :return: torch tensor
+        return a batch of len(idx) random samples. For visualizing training progress
+        :param idx (tuple[ints])
+        :return: batch of random image samples
         """
         assert hasattr(idx, '__iter__'), "idx should be an iterable of integers"
         samples = [self.__getitem__(i)[0] for i in idx]
