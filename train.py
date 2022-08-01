@@ -7,7 +7,7 @@ from torchvision import transforms
 from tqdm import tqdm
 
 # custom modules
-from model import AutoEncoder
+from model import AutoEncoder, ConvAutoEncoder
 from dataset import IntelDataset
 from utils import unnormalize, save_ims
 
@@ -42,7 +42,8 @@ if __name__=='__main__':
     os.makedirs(save_root, exist_ok=True)
 
     # model, loss function and optimizer
-    model = AutoEncoder(hidden_dim=2048).to(device)
+    #model = AutoEncoder().to(device)
+    model = ConvAutoEncoder().to(device)
     criterion = nn.MSELoss(reduction='mean')
     optimizer = optim.Adam(params=model.parameters(), lr=1e-3)
 
