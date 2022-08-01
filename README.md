@@ -1,2 +1,3 @@
-# Autoencoders
-PyTorch implementations of various Autoencoder models
+# Dataset Feature Distance
+
+Wasserstein distance between dataset features learned from Variants of Autoencoders
