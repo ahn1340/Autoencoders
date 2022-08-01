@@ -32,7 +32,7 @@ test_loader = DataLoader(test_dataset,
 
 
 if __name__=='__main__':
-    #TODO: organize configs into a yamlfile
+    #TODO: organize configs into a yaml file
     # configs
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     epochs = 200
@@ -83,10 +83,5 @@ if __name__=='__main__':
             save_ims(samples, output, epoch)
 
             # save model state dict
-            save_path = os.path.join(save_root, f'autoencoder_epoch{epoch}')
+            save_path = os.path.join(save_root, f'autoencoder_epoch{epoch}.pt')
             torch.save(model.state_dict(), save_path)
-
-
-
-
-
