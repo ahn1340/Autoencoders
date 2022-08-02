@@ -17,8 +17,8 @@ class AutoEncoder(nn.Module):
             ReLUConvBN(C_in=128, C_out=256, kernel_size=(4, 4), stride=2, padding=1, dilation=1, affine=True),  # 8
             ReLUConvBN(C_in=256, C_out=512, kernel_size=(4, 4), stride=2, padding=1, dilation=1, affine=True),  # 4
             ReLUConvBN(C_in=512, C_out=512, kernel_size=(4, 4), stride=2, padding=1, dilation=1, affine=True),  # 2
-            #nn.Flatten(),
-            #nn.Linear(512 * 4, hidden_dim),
+            # nn.Flatten(),
+            # nn.Linear(512 * 4, hidden_dim),
         )
         self.decoder = nn.Sequential(
             #nn.Linear(hidden_dim, 512 * 4),
@@ -35,7 +35,6 @@ class AutoEncoder(nn.Module):
                          affine=True),
             ReLUUpConvBN(C_in=32, C_out=3, kernel_size=(4, 4), stride=2, padding=1, dilation=1, output_padding=0,
                          affine=True),
-            nn.Sigmoid(),
         )
 
     def forward(self, x):
@@ -44,37 +43,38 @@ class AutoEncoder(nn.Module):
 
         return decoding
 
+    def encode(self, x):
+        return self.encoder(x)
+
 
 class ConvAutoEncoder(nn.Module):
-    def __init__(self):  #TODO: add arguments later
+    def __init__(self, hidden_dim=1024):  #TODO: add arguments later
         """
         Convolutional Autoencoder with pooling.
         """
         super(ConvAutoEncoder, self).__init__()
         self.encoder = nn.Sequential(
-            ReLUConvBN(C_in=3, C_out=32, kernel_size=(4, 4), stride=2, padding=1, dilation=1, affine=True),  # 64
-            ReLUConvBN(C_in=32, C_out=64, kernel_size=(4, 4), stride=1, padding=1, dilation=1, affine=True),  # 32
-            nn.MaxPool2d(kernel_size=(2, 2), stride=2, padding=0, dilation=1),
-            ReLUConvBN(C_in=64, C_out=128, kernel_size=(4, 4), stride=2, padding=1, dilation=1, affine=True),  # 16
-            ReLUConvBN(C_in=128, C_out=256, kernel_size=(4, 4), stride=1, padding=1, dilation=1, affine=True),  # 8
-            nn.MaxPool2d(kernel_size=(2, 2), stride=2, padding=0, dilation=1),
-            ReLUConvBN(C_in=256, C_out=512, kernel_size=(4, 4), stride=2, padding=1, dilation=1, affine=True),  # 4
-            ReLUConvBN(C_in=512, C_out=512, kernel_size=(4, 4), stride=1, padding=1, dilation=1, affine=True),  # 2
+            ReLUConvBN(C_in=3, C_out=128, kernel_size=(4, 4), stride=2, padding=1, dilation=1, affine=True),  # 64
+            ReLUConvBN(C_in=128, C_out=256, kernel_size=(4, 4), stride=2, padding=1, dilation=1, affine=True),  # 32
+            ReLUConvBN(C_in=256, C_out=512, kernel_size=(4, 4), stride=2, padding=1, dilation=1, affine=True),  # 16
+            ReLUConvBN(C_in=512, C_out=512, kernel_size=(4, 4), stride=2, padding=1, dilation=1, affine=True),  # 8
+            ReLUConvBN(C_in=512, C_out=1024, kernel_size=(4, 4), stride=2, padding=1, dilation=1, affine=True),  # 4
+            nn.Flatten(),
+            nn.Linear(1024 * 4 * 4, hidden_dim),
         )
         self.decoder = nn.Sequential(
+            nn.Linear(hidden_dim, 1024 * 4 * 4),
+            nn.Unflatten(1, (1024, 4, 4)),
+            ReLUUpConvBN(C_in=1024, C_out=512, kernel_size=(4, 4), stride=2, padding=1, dilation=1, output_padding=0,
+                         affine=True),
             ReLUUpConvBN(C_in=512, C_out=512, kernel_size=(4, 4), stride=2, padding=1, dilation=1, output_padding=0,
                          affine=True),
             ReLUUpConvBN(C_in=512, C_out=256, kernel_size=(4, 4), stride=2, padding=1, dilation=1, output_padding=0,
                          affine=True),
             ReLUUpConvBN(C_in=256, C_out=128, kernel_size=(4, 4), stride=2, padding=1, dilation=1, output_padding=0,
                          affine=True),
-            ReLUUpConvBN(C_in=128, C_out=64, kernel_size=(4, 4), stride=2, padding=1, dilation=1, output_padding=0,
+            ReLUUpConvBN(C_in=128, C_out=3, kernel_size=(4, 4), stride=2, padding=1, dilation=1, output_padding=0,
                          affine=True),
-            ReLUUpConvBN(C_in=64, C_out=32, kernel_size=(4, 4), stride=2, padding=1, dilation=1, output_padding=0,
-                         affine=True),
-            ReLUUpConvBN(C_in=32, C_out=3, kernel_size=(4, 4), stride=2, padding=1, dilation=1, output_padding=0,
-                         affine=True),
-            nn.Sigmoid(),
         )
 
     def forward(self, x):
@@ -82,3 +82,6 @@ class ConvAutoEncoder(nn.Module):
         decoding = self.decoder(encoding)
 
         return decoding
+
+    def encode(self, x):
+        return self.encoder(x)
