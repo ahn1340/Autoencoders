@@ -32,20 +32,22 @@ test_loader = DataLoader(test_dataset,
 
 
 if __name__=='__main__':
+    from VQVAE import VQVAE
     #TODO: organize configs into a yaml file
     # configs
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     epochs = 200
-    save_freq = 5  # save im after how many epochs
+    save_freq = 1  # save im after how many epochs
     num_ims = 5  # how many images to save
     save_root = 'ckpt'
     os.makedirs(save_root, exist_ok=True)
 
     # model, loss function and optimizer
     #model = AutoEncoder().to(device)
-    model = ConvAutoEncoder().to(device)
+    #model = ConvAutoEncoder().to(device)
+    model = VQVAE().to(device)
     criterion = nn.MSELoss(reduction='mean')
-    optimizer = optim.Adam(params=model.parameters(), lr=1e-3)
+    optimizer = optim.Adam(params=model.parameters(), lr=2e-4)
 
     # start training
     for epoch in range(1, epochs+1):
